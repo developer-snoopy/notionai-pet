@@ -26,10 +26,10 @@
 
 ### 방법 1 — 설치 파일 다운로드 (권장)
 
-1. [**Releases v0.1.0**](https://github.com/developer-snoopy/notionai-pet/releases/latest) 페이지를 엽니다.
+1. [**Releases**](https://github.com/developer-snoopy/notionai-pet/releases/latest) 페이지를 엽니다.
 2. **Assets**에서 둘 중 하나를 내려받아 실행합니다.
-   - [`notionai-pet_0.1.0_x64-setup.exe`](https://github.com/developer-snoopy/notionai-pet/releases/download/v0.1.0/notionai-pet_0.1.0_x64-setup.exe) — NSIS 설치 파일 (권장, 약 3.6MB)
-   - [`notionai-pet_0.1.0_x64_en-US.msi`](https://github.com/developer-snoopy/notionai-pet/releases/download/v0.1.0/notionai-pet_0.1.0_x64_en-US.msi) — MSI 설치 파일 (약 5.2MB)
+   - [`notionai-pet_0.1.1_x64-setup.exe`](https://github.com/developer-snoopy/notionai-pet/releases/download/v0.1.1/notionai-pet_0.1.1_x64-setup.exe) — NSIS 설치 파일 (권장, 약 3.6MB)
+   - [`notionai-pet_0.1.1_x64_en-US.msi`](https://github.com/developer-snoopy/notionai-pet/releases/download/v0.1.1/notionai-pet_0.1.1_x64_en-US.msi) — MSI 설치 파일 (약 5.2MB)
 3. 설치 안내에 따라 진행하면 시작 메뉴에 **notionai-pet**이 등록됩니다.
 
 > 💡 서명되지 않은 앱이라 Windows SmartScreen 경고가 뜰 수 있습니다. **추가 정보 → 실행**을 누르면 설치할 수 있습니다.
@@ -42,7 +42,7 @@ PowerShell을 열고 아래를 실행하세요.
 
 ```powershell
 # 다운로드
-Invoke-WebRequest -Uri "https://github.com/developer-snoopy/notionai-pet/releases/download/v0.1.0/notionai-pet_0.1.0_x64-setup.exe" -OutFile "$env:TEMP\notionai-pet-setup.exe"
+Invoke-WebRequest -Uri "https://github.com/developer-snoopy/notionai-pet/releases/download/v0.1.1/notionai-pet_0.1.1_x64-setup.exe" -OutFile "$env:TEMP\notionai-pet-setup.exe"
 
 # 무인(silent) 설치
 & "$env:TEMP\notionai-pet-setup.exe" /S
@@ -52,7 +52,7 @@ Invoke-WebRequest -Uri "https://github.com/developer-snoopy/notionai-pet/release
 
 ```powershell
 # 다운로드
-Invoke-WebRequest -Uri "https://github.com/developer-snoopy/notionai-pet/releases/download/v0.1.0/notionai-pet_0.1.0_x64_en-US.msi" -OutFile "$env:TEMP\notionai-pet.msi"
+Invoke-WebRequest -Uri "https://github.com/developer-snoopy/notionai-pet/releases/download/v0.1.1/notionai-pet_0.1.1_x64_en-US.msi" -OutFile "$env:TEMP\notionai-pet.msi"
 
 # 무인(silent) 설치
 msiexec /i "$env:TEMP\notionai-pet.msi" /qn
@@ -61,8 +61,8 @@ msiexec /i "$env:TEMP\notionai-pet.msi" /qn
 **GitHub CLI를 사용하는 경우**
 
 ```powershell
-gh release download v0.1.0 --repo developer-snoopy/notionai-pet --pattern "*.msi" --dir "$env:TEMP"
-msiexec /i "$env:TEMP\notionai-pet_0.1.0_x64_en-US.msi" /qn
+gh release download v0.1.1 --repo developer-snoopy/notionai-pet --pattern "*.msi" --dir "$env:TEMP"
+msiexec /i "$env:TEMP\notionai-pet_0.1.1_x64_en-US.msi" /qn
 ```
 
 제거는 **설정 → 앱 → notionai-pet → 제거** 또는 `msiexec /x "$env:TEMP\notionai-pet.msi" /qn` 으로 할 수 있습니다.
