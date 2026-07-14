@@ -4,7 +4,7 @@ interface PetProps {
   onClick?: () => void;
 }
 
-/** 노션 스타일 흑백 고스트 캐릭터 (CSS/SVG 기반, 추후 스프라이트로 교체 가능) */
+/** 노션 AI 스타일 캐릭터 — 모서리 접힌 문서 페이지 + AI 스파클 (오리지널 디자인, 잉크 스타일) */
 export default function Pet({ onClick }: PetProps) {
   const state = usePetStore((s) => s.state);
 
@@ -23,27 +23,55 @@ export default function Pet({ onClick }: PetProps) {
         data-tauri-drag-region
         style={{ pointerEvents: "none" }}
       >
-        {/* 몸통 (고스트) */}
+        {/* 몸통 (모서리 접힌 문서 페이지) */}
         <path
-          d="M60 8
-             C 30 8, 14 32, 14 62
-             L 14 112
-             Q 21 104, 29 112
-             Q 37 120, 45 112
-             Q 53 104, 60 112
-             Q 67 120, 75 112
-             Q 83 104, 91 112
-             Q 99 120, 106 112
-             L 106 62
-             C 106 32, 90 8, 60 8 Z"
+          d="M36 14
+             L 78 14
+             L 96 32
+             L 96 104
+             Q 96 116, 84 116
+             L 36 116
+             Q 24 116, 24 104
+             L 24 26
+             Q 24 14, 36 14 Z"
           fill="#ffffff"
           stroke="#37352f"
           strokeWidth="3.5"
           strokeLinejoin="round"
         />
+        {/* 접힌 귀퉁이 */}
+        <path
+          d="M78 14 L 96 32 L 78 32 Z"
+          fill="#f1f0ee"
+          stroke="#37352f"
+          strokeWidth="3"
+          strokeLinejoin="round"
+        />
+        {/* 문서 텍스트 라인 */}
+        <g stroke="#d3d1cb" strokeWidth="3" strokeLinecap="round">
+          <line x1="38" y1="96" x2="76" y2="96" />
+          <line x1="38" y1="104" x2="62" y2="104" />
+        </g>
+        {/* AI 스파클 */}
+        {state !== "sleeping" && (
+          <g fill="#9065b0">
+            <path
+              className="pet-sparkle"
+              d="M14 30 L16.5 37.5 L24 40 L16.5 42.5 L14 50 L11.5 42.5 L4 40 L11.5 37.5 Z"
+            />
+            <path
+              className="pet-sparkle"
+              d="M106 66 L107.8 71.2 L113 73 L107.8 74.8 L106 80 L104.2 74.8 L99 73 L104.2 71.2 Z"
+            />
+            <path
+              className="pet-sparkle"
+              d="M103 8 L104.4 12.1 L108.5 13.5 L104.4 14.9 L103 19 L101.6 14.9 L97.5 13.5 L101.6 12.1 Z"
+            />
+          </g>
+        )}
         {/* 볼터치 */}
-        <ellipse cx="34" cy="66" rx="7" ry="4.5" fill="#f5c8c2" />
-        <ellipse cx="86" cy="66" rx="7" ry="4.5" fill="#f5c8c2" />
+        <ellipse cx="40" cy="70" rx="7" ry="4.5" fill="#f5c8c2" />
+        <ellipse cx="80" cy="70" rx="7" ry="4.5" fill="#f5c8c2" />
         {/* 눈 */}
         {state === "sleeping" ? (
           <g>

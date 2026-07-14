@@ -332,6 +332,32 @@ body,
   transform-origin: 4px 0;
 }
 
+.pet-sparkle {
+  animation: twinkle 1.8s ease-in-out infinite;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+.pet-sparkle:nth-of-type(2) {
+  animation-delay: 0.6s;
+}
+
+.pet-sparkle:nth-of-type(3) {
+  animation-delay: 1.2s;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.75) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1) rotate(20deg);
+  }
+}
+
 @keyframes scribble {
   0%,
   100% {
