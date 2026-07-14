@@ -1,0 +1,108 @@
+import { usePetStore } from "../stores/petStore";
+
+interface PetProps {
+  onClick?: () => void;
+}
+
+/** 노션 스타일 흑백 고스트 캐릭터 (CSS/SVG 기반, 추후 스프라이트로 교체 가능) */
+export default function Pet({ onClick }: PetProps) {
+  const state = usePetStore((s) => s.state);
+
+  return (
+    <div
+      className={`pet ${state}`}
+      onClick={onClick}
+      data-tauri-drag-region
+      role="img"
+      aria-label="노션 펫"
+    >
+      <svg
+        width="120"
+        height="130"
+        viewBox="0 0 120 130"
+        data-tauri-drag-region
+        style={{ pointerEvents: "none" }}
+      >
+        {/* 몸통 (고스트) */}
+        <path
+          d="M60 8
+             C 30 8, 14 32, 14 62
+             L 14 112
+             Q 21 104, 29 112
+             Q 37 120, 45 112
+             Q 53 104, 60 112
+             Q 67 120, 75 112
+             Q 83 104, 91 112
+             Q 99 120, 106 112
+             L 106 62
+             C 106 32, 90 8, 60 8 Z"
+          fill="#ffffff"
+          stroke="#37352f"
+          strokeWidth="3.5"
+          strokeLinejoin="round"
+        />
+        {/* 볼터치 */}
+        <ellipse cx="34" cy="66" rx="7" ry="4.5" fill="#f5c8c2" />
+        <ellipse cx="86" cy="66" rx="7" ry="4.5" fill="#f5c8c2" />
+        {/* 눈 */}
+        {state === "sleeping" ? (
+          <g>
+            <path
+              d="M38 55 Q 44 59, 50 55"
+              fill="none"
+              stroke="#37352f"
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
+            <path
+              d="M70 55 Q 76 59, 82 55"
+              fill="none"
+              stroke="#37352f"
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
+          </g>
+        ) : (
+          <g className="pet-eye">
+            <circle cx="44" cy="54" r="5.5" fill="#37352f" />
+            <circle cx="76" cy="54" r="5.5" fill="#37352f" />
+            <circle cx="46" cy="52" r="1.8" fill="#fff" />
+            <circle cx="78" cy="52" r="1.8" fill="#fff" />
+          </g>
+        )}
+        {/* 입 */}
+        {state === "talking" ? (
+          <ellipse cx="60" cy="72" rx="7" ry="9" fill="#37352f" />
+        ) : state === "sleeping" ? (
+          <ellipse cx="60" cy="73" rx="4" ry="5" fill="#37352f" />
+        ) : (
+          <path
+            d="M52 70 Q 60 78, 68 70"
+            fill="none"
+            stroke="#37352f"
+            strokeWidth="3"
+            strokeLinecap="round"
+          />
+        )}
+        {/* 잠자기: zzz */}
+        {state === "sleeping" && (
+          <g className="pet-zzz" fill="#787774" fontFamily="inherit" fontWeight="700">
+            <text x="92" y="30" fontSize="16">z</text>
+            <text x="102" y="20" fontSize="12">z</text>
+            <text x="110" y="12" fontSize="9">z</text>
+          </g>
+        )}
+        {/* 작업 중: 연필 */}
+        {state === "working" && (
+          <g transform="translate(88 76)">
+            <g className="pet-pencil">
+              <rect x="0" y="0" width="8" height="26" rx="1.5" fill="#f5b342" stroke="#37352f" strokeWidth="2" />
+              <path d="M0 26 L4 34 L8 26 Z" fill="#f7e0b8" stroke="#37352f" strokeWidth="2" strokeLinejoin="round" />
+              <rect x="0" y="-4" width="8" height="5" rx="1.5" fill="#e37c73" stroke="#37352f" strokeWidth="2" />
+            </g>
+          </g>
+        )}
+      </svg>
+    </div>
+  );
+}
