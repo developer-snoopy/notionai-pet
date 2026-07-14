@@ -60,11 +60,29 @@ fn delete_token() -> Result<(), String> {
     }
 }
 
+/// 메인 창을 표시하고 포커스를 준다 (펫 우클릭 메뉴 '실행'용).
+#[tauri::command]
+fn show_main(app: tauri::AppHandle) {
+    if let Some(win) = app.get_webview_window("main") {
+        let _ = win.show();
+        let _ = win.unminimize();
+        let _ = win.set_focus();
+    }
+}
+
+/// 앱을 완전히 종료한다 (펫 우클릭 메뉴 '종료'용).
+#[tauri::command]
+fn quit_app(app: tauri::AppHandle) {
+    app.exit(0);
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_http::init())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
             None,
@@ -74,7 +92,9 @@ pub fn run() {
             is_pet_visible,
             save_token,
             load_token,
-            delete_token
+            delete_token,
+            show_main,
+            quit_app
         ])
         .setup(|app| {
             let open_main = MenuItem::with_id(app, "open-main", "메인 화면 열기", true, None::<&str>)?;
