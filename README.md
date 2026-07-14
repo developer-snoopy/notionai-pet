@@ -90,10 +90,10 @@
 
    | OS | 파일 | 비고 |
    |---|---|---|
-   | Windows (x64) | `notionai-pet_0.4.0_x64-setup.exe` | NSIS 설치 파일 (권장) |
-   | Windows (x64) | `notionai-pet_0.4.0_x64_en-US.msi` | MSI 설치 파일 |
-   | macOS (Apple Silicon) | `notionai-pet_0.4.0_aarch64.dmg` | M1/M2/M3/M4 |
-   | macOS (Intel) | `notionai-pet_0.4.0_x64.dmg` | Intel Mac |
+   | Windows (x64) | `NotionAI.Pet_0.4.0_x64-setup.exe` | NSIS 설치 파일 (권장) |
+   | Windows (x64) | `NotionAI.Pet_0.4.0_x64_en-US.msi` | MSI 설치 파일 |
+   | macOS (Apple Silicon) | `NotionAI.Pet_0.4.0_aarch64.dmg` | M1/M2/M3/M4 |
+   | macOS (Intel) | `NotionAI.Pet_0.4.0_x64.dmg` | Intel Mac |
 
    > 💡 **내 Mac이 Apple Silicon인지 모르겠다면**:  메뉴 → **이 Mac에 관하여**에서 "칩" 항목에 Apple M1/M2/M3/M4가 보이면 Apple Silicon입니다.
 
@@ -103,7 +103,7 @@
 >
 > 💡 **macOS**: 서명되지 않은 앱이라 처음 실행 시 차단될 수 있습니다. **Finder에서 앱을 우클릭 → 열기**를 선택하거나, 터미널에서 아래 명령으로 격리 속성을 제거하세요.
 > ```bash
-> xattr -dr com.apple.quarantine /Applications/notionai-pet.app
+> xattr -dr com.apple.quarantine "/Applications/NotionAI Pet.app"
 > ```
 
 ### 방법 2 — 명령줄(Command Line)로 설치
@@ -118,14 +118,14 @@
 CMD:
 
 ```cmd
-curl -L -o "%TEMP%\notionai-pet-setup.exe" "https://github.com/developer-snoopy/notionai-pet/releases/download/v0.4.0/notionai-pet_0.4.0_x64-setup.exe"
+curl -L -o "%TEMP%\notionai-pet-setup.exe" "https://github.com/developer-snoopy/notionai-pet/releases/download/v0.4.0/NotionAI.Pet_0.4.0_x64-setup.exe"
 "%TEMP%\notionai-pet-setup.exe" /S
 ```
 
 PowerShell:
 
 ```powershell
-Invoke-WebRequest -Uri "https://github.com/developer-snoopy/notionai-pet/releases/download/v0.4.0/notionai-pet_0.4.0_x64-setup.exe" -OutFile "$env:TEMP\notionai-pet-setup.exe"
+Invoke-WebRequest -Uri "https://github.com/developer-snoopy/notionai-pet/releases/download/v0.4.0/NotionAI.Pet_0.4.0_x64-setup.exe" -OutFile "$env:TEMP\notionai-pet-setup.exe"
 & "$env:TEMP\notionai-pet-setup.exe" /S
 ```
 
@@ -136,14 +136,14 @@ Invoke-WebRequest -Uri "https://github.com/developer-snoopy/notionai-pet/release
 CMD (관리자):
 
 ```cmd
-curl -L -o "%TEMP%\notionai-pet.msi" "https://github.com/developer-snoopy/notionai-pet/releases/download/v0.4.0/notionai-pet_0.4.0_x64_en-US.msi"
+curl -L -o "%TEMP%\notionai-pet.msi" "https://github.com/developer-snoopy/notionai-pet/releases/download/v0.4.0/NotionAI.Pet_0.4.0_x64_en-US.msi"
 msiexec /i "%TEMP%\notionai-pet.msi" /qn
 ```
 
 PowerShell (관리자):
 
 ```powershell
-Invoke-WebRequest -Uri "https://github.com/developer-snoopy/notionai-pet/releases/download/v0.4.0/notionai-pet_0.4.0_x64_en-US.msi" -OutFile "$env:TEMP\notionai-pet.msi"
+Invoke-WebRequest -Uri "https://github.com/developer-snoopy/notionai-pet/releases/download/v0.4.0/NotionAI.Pet_0.4.0_x64_en-US.msi" -OutFile "$env:TEMP\notionai-pet.msi"
 msiexec /i "$env:TEMP\notionai-pet.msi" /qn
 ```
 
@@ -151,28 +151,28 @@ msiexec /i "$env:TEMP\notionai-pet.msi" /qn
 
 ```powershell
 gh release download v0.4.0 --repo developer-snoopy/notionai-pet --pattern "*.msi" --dir "$env:TEMP"
-msiexec /i "$env:TEMP\notionai-pet_0.4.0_x64_en-US.msi" /qn
+msiexec /i "$env:TEMP\NotionAI.Pet_0.4.0_x64_en-US.msi" /qn
 ```
 
-제거는 **설정 → 앱 → notionai-pet → 제거** 또는 `msiexec /x "$env:TEMP\notionai-pet.msi" /qn` 으로 할 수 있습니다.
+제거는 **설정 → 앱 → NotionAI Pet → 제거** 또는 `msiexec /x "$env:TEMP\notionai-pet.msi" /qn` 으로 할 수 있습니다.
 
 **macOS** — 터미널을 열고 아래를 실행하세요. (Apple Silicon은 `aarch64`, Intel은 `x64`)
 
 ```bash
 # 다운로드 (Apple Silicon 기준)
 curl -L -o /tmp/notionai-pet.dmg \
-  "https://github.com/developer-snoopy/notionai-pet/releases/download/v0.4.0/notionai-pet_0.4.0_aarch64.dmg"
+  "https://github.com/developer-snoopy/notionai-pet/releases/download/v0.4.0/NotionAI.Pet_0.4.0_aarch64.dmg"
 
 # 마운트 후 Applications로 복사
 hdiutil attach /tmp/notionai-pet.dmg
-cp -R "/Volumes/notionai-pet/notionai-pet.app" /Applications/
-hdiutil detach "/Volumes/notionai-pet"
+cp -R "/Volumes/NotionAI Pet/NotionAI Pet.app" /Applications/
+hdiutil detach "/Volumes/NotionAI Pet"
 
 # Gatekeeper 격리 속성 제거 (서명되지 않은 앱)
-xattr -dr com.apple.quarantine /Applications/notionai-pet.app
+xattr -dr com.apple.quarantine "/Applications/NotionAI Pet.app"
 ```
 
-제거는 `/Applications/notionai-pet.app`을 휴지통으로 옮기면 됩니다.
+제거는 `/Applications/NotionAI Pet.app`을 휴지통으로 옮기면 됩니다.
 
 </details>
 
