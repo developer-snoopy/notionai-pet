@@ -49,25 +49,39 @@
 
 ### 방법 2 — 명령줄(Command Line)로 설치
 
-**Windows** — PowerShell을 열고 아래를 실행하세요.
+**Windows** — CMD(명령 프롬프트) 또는 PowerShell에서 실행할 수 있습니다.
 
-**NSIS 설치 파일 (자동 설치)**
+**NSIS 설치 파일 (권장 · 관리자 권한 불필요, 사용자 단위 설치)**
+
+CMD:
+
+```cmd
+curl -L -o "%TEMP%\notionai-pet-setup.exe" "https://github.com/developer-snoopy/notionai-pet/releases/download/v0.3.0/notionai-pet_0.3.0_x64-setup.exe"
+"%TEMP%\notionai-pet-setup.exe" /S
+```
+
+PowerShell:
 
 ```powershell
-# 다운로드
 Invoke-WebRequest -Uri "https://github.com/developer-snoopy/notionai-pet/releases/download/v0.3.0/notionai-pet_0.3.0_x64-setup.exe" -OutFile "$env:TEMP\notionai-pet-setup.exe"
-
-# 무인(silent) 설치
 & "$env:TEMP\notionai-pet-setup.exe" /S
 ```
 
-**MSI 설치 파일 (msiexec)**
+**MSI 설치 파일 (msiexec · 시스템 단위 설치)**
+
+> ⚠️ MSI 무인 설치(`/qn`)는 **관리자 권한**이 필요합니다. 관리자 권한 없이 실행하면 오류 표시 없이 설치가 실패하니(Error 1925), CMD/PowerShell을 **관리자 권한으로 실행**한 뒤 진행하세요.
+
+CMD (관리자):
+
+```cmd
+curl -L -o "%TEMP%\notionai-pet.msi" "https://github.com/developer-snoopy/notionai-pet/releases/download/v0.3.0/notionai-pet_0.3.0_x64_en-US.msi"
+msiexec /i "%TEMP%\notionai-pet.msi" /qn
+```
+
+PowerShell (관리자):
 
 ```powershell
-# 다운로드
 Invoke-WebRequest -Uri "https://github.com/developer-snoopy/notionai-pet/releases/download/v0.3.0/notionai-pet_0.3.0_x64_en-US.msi" -OutFile "$env:TEMP\notionai-pet.msi"
-
-# 무인(silent) 설치
 msiexec /i "$env:TEMP\notionai-pet.msi" /qn
 ```
 
