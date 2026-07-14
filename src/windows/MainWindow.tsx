@@ -111,6 +111,11 @@ function AiCheckScreen() {
     checkAiAccess(token).then(setAccess);
   }, [token]);
 
+  // 렌더 중 상태 변경을 피하기 위해 effect에서 화면 전환
+  useEffect(() => {
+    if (access === "available") proceedToHome();
+  }, [access, proceedToHome]);
+
   if (access === "checking") {
     return (
       <div className="card" style={{ textAlign: "center" }}>
@@ -123,7 +128,6 @@ function AiCheckScreen() {
   }
 
   if (access === "available") {
-    proceedToHome();
     return null;
   }
 

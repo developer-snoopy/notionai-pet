@@ -13,6 +13,7 @@ interface PetStore {
 }
 
 const SLEEP_AFTER_MS = 90_000; // 무활동 90초 후 잠들기
+const MAX_QUEUE = 3; // 말풍선 대기열 상한 (오래된 것부터 버림)
 
 let bubbleTimer: number | undefined;
 let sleepTimer: number | undefined;
@@ -69,9 +70,10 @@ export const usePetStore = create<PetStore>((set, get) => {
       scheduleSleep();
     },
     say: (message, durationMs = 4000) => {
-      // 말하는 중이면 큐에 쌓아 순서대로 표시
+      // 말하는 중이면 큐에 쌓아 순서대로 표시 (상한 초과 시 오래된 메시지 폐기)
       if (get().message) {
         messageQueue.push({ message, durationMs });
+        while (messageQueue.length > MAX_QUEUE) messageQueue.shift();
         return;
       }
       if (sleepTimer) window.clearTimeout(sleepTimer);

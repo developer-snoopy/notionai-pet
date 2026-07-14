@@ -1,8 +1,8 @@
 # NotionAI Pet 🐾
 
-> 노션 AI 캐릭터가 바탕화면 위에 떠다니며, 노션 워크스페이스의 활동을 실시간 말풍선으로 알려주는 Windows 데스크톱 펫 앱
+> 노션 AI 캐릭터가 바탕화면 위에 떠다니며, 노션 워크스페이스의 활동을 실시간 말풍선으로 알려주는 데스크톱 펫 앱 (Windows / macOS)
 
-![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-blue)
+![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11%20%7C%20macOS-blue)
 ![Tauri](https://img.shields.io/badge/Tauri-2.x-orange)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -16,33 +16,46 @@
 - 🎭 **상태 애니메이션** — 대기 / 작업 중 / 말하기 / 잠자기 (90초 동안 아무 일 없으면 잠들어요)
 - 🖱️ **인터랙션** — 드래그로 어디든 이동, 클릭하면 반응(자고 있으면 깨어나요)
 - 🔔 **트레이 상주** — 창을 닫아도 시스템 트레이에서 계속 실행
-- 🔐 **안전한 토큰 보관** — Notion 토큰은 Windows 자격 증명 관리자에 암호화 저장
+- 🔐 **안전한 토큰 보관** — Notion 토큰은 OS 보안 저장소(Windows 자격 증명 관리자 / macOS 키체인)에 암호화 저장
 
 ---
 
 ## 📥 설치하기
 
-> **요구 사항**: Windows 10/11 (x64) + WebView2 Runtime (Windows 11은 기본 내장, Windows 10은 설치 시 자동 안내)
+> **요구 사항**
+> - **Windows**: Windows 10/11 (x64) + WebView2 Runtime (Windows 11은 기본 내장, Windows 10은 설치 시 자동 안내)
+> - **macOS**: macOS 11 (Big Sur) 이상 — Apple Silicon / Intel 모두 지원
 
 ### 방법 1 — 설치 파일 다운로드 (권장)
 
 1. [**Releases**](https://github.com/developer-snoopy/notionai-pet/releases/latest) 페이지를 엽니다.
-2. **Assets**에서 둘 중 하나를 내려받아 실행합니다.
-   - [`notionai-pet_0.2.0_x64-setup.exe`](https://github.com/developer-snoopy/notionai-pet/releases/download/v0.2.0/notionai-pet_0.2.0_x64-setup.exe) — NSIS 설치 파일 (권장, 약 3.6MB)
-   - [`notionai-pet_0.2.0_x64_en-US.msi`](https://github.com/developer-snoopy/notionai-pet/releases/download/v0.2.0/notionai-pet_0.2.0_x64_en-US.msi) — MSI 설치 파일 (약 5.2MB)
-3. 설치 안내에 따라 진행하면 시작 메뉴에 **notionai-pet**이 등록됩니다.
+2. **Assets**에서 운영체제에 맞는 파일을 내려받아 실행합니다.
 
-> 💡 서명되지 않은 앱이라 Windows SmartScreen 경고가 뜰 수 있습니다. **추가 정보 → 실행**을 누르면 설치할 수 있습니다.
+   | OS | 파일 | 비고 |
+   |---|---|---|
+   | Windows (x64) | `notionai-pet_0.3.0_x64-setup.exe` | NSIS 설치 파일 (권장) |
+   | Windows (x64) | `notionai-pet_0.3.0_x64_en-US.msi` | MSI 설치 파일 |
+   | macOS (Apple Silicon) | `notionai-pet_0.3.0_aarch64.dmg` | M1/M2/M3/M4 |
+   | macOS (Intel) | `notionai-pet_0.3.0_x64.dmg` | Intel Mac |
+
+3. 설치 안내에 따라 진행하면 앱이 설치됩니다. (Windows: 시작 메뉴 등록, macOS: Applications 폴더로 드래그)
+
+> 💡 **Windows**: 서명되지 않은 앱이라 SmartScreen 경고가 뜰 수 있습니다. **추가 정보 → 실행**을 누르면 설치할 수 있습니다.
+>
+> 💡 **macOS**: 서명되지 않은 앱이라 처음 실행 시 차단될 수 있습니다. **Finder에서 앱을 우클릭 → 열기**를 선택하거나, 터미널에서 아래 명령으로 격리 속성을 제거하세요.
+> ```bash
+> xattr -dr com.apple.quarantine /Applications/notionai-pet.app
+> ```
 
 ### 방법 2 — 명령줄(Command Line)로 설치
 
-PowerShell을 열고 아래를 실행하세요.
+**Windows** — PowerShell을 열고 아래를 실행하세요.
 
 **NSIS 설치 파일 (자동 설치)**
 
 ```powershell
 # 다운로드
-Invoke-WebRequest -Uri "https://github.com/developer-snoopy/notionai-pet/releases/download/v0.2.0/notionai-pet_0.2.0_x64-setup.exe" -OutFile "$env:TEMP\notionai-pet-setup.exe"
+Invoke-WebRequest -Uri "https://github.com/developer-snoopy/notionai-pet/releases/download/v0.3.0/notionai-pet_0.3.0_x64-setup.exe" -OutFile "$env:TEMP\notionai-pet-setup.exe"
 
 # 무인(silent) 설치
 & "$env:TEMP\notionai-pet-setup.exe" /S
@@ -52,7 +65,7 @@ Invoke-WebRequest -Uri "https://github.com/developer-snoopy/notionai-pet/release
 
 ```powershell
 # 다운로드
-Invoke-WebRequest -Uri "https://github.com/developer-snoopy/notionai-pet/releases/download/v0.2.0/notionai-pet_0.2.0_x64_en-US.msi" -OutFile "$env:TEMP\notionai-pet.msi"
+Invoke-WebRequest -Uri "https://github.com/developer-snoopy/notionai-pet/releases/download/v0.3.0/notionai-pet_0.3.0_x64_en-US.msi" -OutFile "$env:TEMP\notionai-pet.msi"
 
 # 무인(silent) 설치
 msiexec /i "$env:TEMP\notionai-pet.msi" /qn
@@ -61,11 +74,29 @@ msiexec /i "$env:TEMP\notionai-pet.msi" /qn
 **GitHub CLI를 사용하는 경우**
 
 ```powershell
-gh release download v0.2.0 --repo developer-snoopy/notionai-pet --pattern "*.msi" --dir "$env:TEMP"
-msiexec /i "$env:TEMP\notionai-pet_0.2.0_x64_en-US.msi" /qn
+gh release download v0.3.0 --repo developer-snoopy/notionai-pet --pattern "*.msi" --dir "$env:TEMP"
+msiexec /i "$env:TEMP\notionai-pet_0.3.0_x64_en-US.msi" /qn
 ```
 
 제거는 **설정 → 앱 → notionai-pet → 제거** 또는 `msiexec /x "$env:TEMP\notionai-pet.msi" /qn` 으로 할 수 있습니다.
+
+**macOS** — 터미널을 열고 아래를 실행하세요. (Apple Silicon은 `aarch64`, Intel은 `x64`)
+
+```bash
+# 다운로드 (Apple Silicon 기준)
+curl -L -o /tmp/notionai-pet.dmg \
+  "https://github.com/developer-snoopy/notionai-pet/releases/download/v0.3.0/notionai-pet_0.3.0_aarch64.dmg"
+
+# 마운트 후 Applications로 복사
+hdiutil attach /tmp/notionai-pet.dmg
+cp -R "/Volumes/notionai-pet/notionai-pet.app" /Applications/
+hdiutil detach "/Volumes/notionai-pet"
+
+# Gatekeeper 격리 속성 제거 (서명되지 않은 앱)
+xattr -dr com.apple.quarantine /Applications/notionai-pet.app
+```
+
+제거는 `/Applications/notionai-pet.app`을 휴지통으로 옮기면 됩니다.
 
 ### 방법 3 — 소스에서 직접 빌드
 
@@ -105,7 +136,7 @@ npm run tauri build   # 설치 파일 생성 (src-tauri/target/release/bundle/)
 2. 복사한 토큰을 입력하고 **로그인**을 누릅니다.
 3. AI 권한 확인 단계에서 안내를 확인한 뒤 **계속 진행하기**를 누릅니다.
 
-토큰은 이 기기의 Windows 자격 증명 관리자에만 저장되며 외부로 전송되지 않습니다.
+토큰은 이 기기의 OS 보안 저장소(Windows 자격 증명 관리자 / macOS 키체인)에만 저장되며 외부로 전송되지 않습니다.
 
 ### 3단계 — 펫 표시하기
 
@@ -124,7 +155,7 @@ npm run tauri build   # 설치 파일 생성 (src-tauri/target/release/bundle/)
 | 잠든 펫 깨우기 | 펫을 클릭 |
 | 펫 숨기기/보이기 | 홈 화면 토글 또는 트레이 아이콘 우클릭 → **펫 보이기/숨기기** |
 | 메인 창 다시 열기 | 트레이 아이콘 우클릭 → **메인 화면 열기** |
-| 부팅 시 자동 실행 | 홈 화면 → **윈도우 시작 시 자동 실행** 토글 |
+| 부팅 시 자동 실행 | 홈 화면 → **시작 시 자동 실행** 토글 |
 | 로그아웃 | 홈 화면 하단 **로그아웃** (저장된 토큰도 삭제됩니다) |
 | 앱 완전히 종료 | 트레이 아이콘 우클릭 → **종료** |
 
@@ -162,7 +193,7 @@ npm run tauri build   # 설치 파일 생성 (src-tauri/target/release/bundle/)
 Notion 공개 API에는 AI 기능 활성화 여부를 조회하는 엔드포인트가 없어 자동 확인이 불가합니다. 안내를 확인하고 **계속 진행하기**를 누르면 정상적으로 사용할 수 있습니다.
 
 **Q. 토큰은 안전하게 보관되나요?**
-네. 토큰은 Windows 자격 증명 관리자(Credential Manager)에 저장되며, 이 기기 밖으로 전송되지 않습니다. Notion API 호출에만 사용됩니다.
+네. 토큰은 OS 보안 저장소(Windows 자격 증명 관리자 / macOS 키체인)에 저장되며, 이 기기 밖으로 전송되지 않습니다. Notion API 호출에만 사용됩니다.
 
 ---
 
