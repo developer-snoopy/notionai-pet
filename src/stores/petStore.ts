@@ -6,10 +6,23 @@ interface PetStore {
   state: PetState;
   message: string | null;
   busy: boolean;
+  /** 위치 고정 여부 — 켜져 있으면 드래그로 이동할 수 없다 */
+  locked: boolean;
   say: (message: string, durationMs?: number) => void;
   setState: (state: PetState) => void;
   setBusy: (busy: boolean) => void;
+  setLocked: (locked: boolean) => void;
   wake: () => void;
+}
+
+const LOCK_KEY = "pet-position-locked";
+
+function loadLocked(): boolean {
+  try {
+    return localStorage.getItem(LOCK_KEY) === "1";
+  } catch {
+    return false;
+  }
 }
 
 const SLEEP_AFTER_MS = 90_000; // 무활동 90초 후 잠들기
@@ -49,6 +62,15 @@ export const usePetStore = create<PetStore>((set, get) => {
     state: "idle",
     message: null,
     busy: false,
+    locked: loadLocked(),
+    setLocked: (locked) => {
+      try {
+        localStorage.setItem(LOCK_KEY, locked ? "1" : "0");
+      } catch {
+        // 저장 실패 시에도 세션 내에서는 동작하도록 무시
+      }
+      set({ locked });
+    },
     setState: (state) => {
       set({ state });
       if (state === "idle") scheduleSleep();

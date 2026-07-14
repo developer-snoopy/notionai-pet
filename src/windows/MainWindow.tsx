@@ -5,6 +5,7 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import { enable, disable, isEnabled } from "@tauri-apps/plugin-autostart";
 import { useAuthStore } from "../stores/authStore";
 import { verifyToken, checkAiAccess, AiAccess } from "../lib/notion";
+import notionaiCharacter from "../assets/notionai_character.png";
 
 export default function MainWindow() {
   const step = useAuthStore((s) => s.step);
@@ -16,7 +17,9 @@ export default function MainWindow() {
 
   return (
     <div className="main-window">
-      <div className="logo">🐾</div>
+      <div className="logo">
+        <img src={notionaiCharacter} alt="NotionAI Pet 로고" width="56" height="56" draggable={false} />
+      </div>
       <h1>NotionAI Pet</h1>
       <p className="subtitle">
         노션 AI의 활동을 바탕화면 위 펫의 말풍선으로 만나보세요

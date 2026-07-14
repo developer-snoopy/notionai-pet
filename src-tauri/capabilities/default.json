@@ -7,11 +7,6 @@
     "core:default",
     "opener:default",
     "autostart:default",
-    "dialog:default",
-    {
-      "identifier": "fs:allow-read-file",
-      "allow": [{ "path": "**" }]
-    },
     {
       "identifier": "http:default",
       "allow": [{ "url": "https://api.notion.com/*" }]

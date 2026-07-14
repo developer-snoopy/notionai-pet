@@ -3,7 +3,6 @@ import { invoke } from "@tauri-apps/api/core";
 import Pet from "../components/Pet";
 import SpeechBubble from "../components/SpeechBubble";
 import { usePetStore } from "../stores/petStore";
-import { useCharacterStore, CharacterKind } from "../stores/characterStore";
 import { startNotionWatcher, activityMessage } from "../lib/notionWatcher";
 
 const GREETINGS = [
@@ -57,9 +56,8 @@ export default function PetWindow() {
 
   // ── 우클릭 컨텍스트 메뉴 ──
   const [menuPos, setMenuPos] = useState<{ x: number; y: number } | null>(null);
-  const kind = useCharacterStore((s) => s.kind);
-  const setKind = useCharacterStore((s) => s.setKind);
-  const pickCustomImage = useCharacterStore((s) => s.pickCustomImage);
+  const locked = usePetStore((s) => s.locked);
+  const setLocked = usePetStore((s) => s.setLocked);
 
   const closeMenu = useCallback(() => setMenuPos(null), []);
 
@@ -67,23 +65,15 @@ export default function PetWindow() {
     e.preventDefault();
     // 메뉴가 창 밖으로 나가지 않도록 위치 보정
     const x = Math.min(e.clientX, window.innerWidth - 150);
-    const y = Math.min(e.clientY, window.innerHeight - 190);
+    const y = Math.min(e.clientY, window.innerHeight - 150);
     setMenuPos({ x: Math.max(0, x), y: Math.max(0, y) });
   };
 
-  const selectCharacter = async (next: CharacterKind) => {
+  const toggleLock = () => {
     closeMenu();
-    if (next === "custom") {
-      try {
-        const ok = await pickCustomImage();
-        if (ok) say("새 모습 어때요? ✨");
-      } catch (err) {
-        say(err instanceof Error ? err.message : "이미지를 불러오지 못했어요 😢");
-      }
-      return;
-    }
-    setKind(next);
-    say("새 모습 어때요? ✨");
+    const next = !locked;
+    setLocked(next);
+    say(next ? "여기 딱 있을게요! 📌" : "이제 자유롭게 옮길 수 있어요! 🖱️");
   };
 
   const openMain = async () => {
@@ -98,7 +88,7 @@ export default function PetWindow() {
   return (
     <div
       className="pet-window"
-      data-tauri-drag-region
+      {...(locked ? {} : { "data-tauri-drag-region": true })}
       onContextMenu={handleContextMenu}
       onClick={closeMenu}
     >
@@ -115,15 +105,8 @@ export default function PetWindow() {
             ▶️ 실행 (메인 화면)
           </button>
           <div className="menu-divider" />
-          <div className="menu-label">캐릭터</div>
-          <button className="menu-item" onClick={() => selectCharacter("page")}>
-            {kind === "page" ? "✔ " : ""}📄 페이지
-          </button>
-          <button className="menu-item" onClick={() => selectCharacter("ghost")}>
-            {kind === "ghost" ? "✔ " : ""}👻 고스트
-          </button>
-          <button className="menu-item" onClick={() => selectCharacter("custom")}>
-            {kind === "custom" ? "✔ " : ""}🖼️ 내 이미지 선택…
+          <button className="menu-item" onClick={toggleLock}>
+            {locked ? "✔ " : ""}📌 위치 고정
           </button>
           <div className="menu-divider" />
           <button className="menu-item menu-quit" onClick={quitApp}>

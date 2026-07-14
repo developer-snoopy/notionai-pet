@@ -93,7 +93,7 @@ notionai-pet/
 │   │   ├── MainWindow.tsx      # 로그인 → AI 확인 → 홈(펫 토글)
 │   │   └── PetWindow.tsx       # 펫 오버레이 창
 │   ├── components/
-│   │   ├── Pet.tsx             # SVG 캐릭터 렌더러
+│   │   ├── Pet.tsx             # 캐릭터 렌더러 (노션 AI 이미지 + 상태 소품 오버레이)
 │   │   └── SpeechBubble.tsx    # 말풍선 컴포넌트
 │   ├── stores/
 │   │   ├── authStore.ts        # 인증 플로우 상태 (Zustand)
