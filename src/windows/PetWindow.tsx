@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import Pet from "../components/Pet";
 import SpeechBubble from "../components/SpeechBubble";
 import { usePetStore } from "../stores/petStore";
@@ -76,6 +77,36 @@ export default function PetWindow() {
     say(next ? "여기 딱 있을게요! 📌" : "이제 자유롭게 옮길 수 있어요! 🖱️");
   };
 
+  // ── 드래그 이동 ──
+  // data-tauri-drag-region 속성은 클릭된 요소 자신에만 적용되고, 필요한
+  // start-dragging 권한도 core:default에 없어 동작하지 않는다. 대신 마우스가
+  // 임계값 이상 움직였을 때만 명시적으로 startDragging()을 호출해,
+  // 클릭(대화/깨우기)과 드래그(이동)를 모두 지원한다.
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (locked || e.button !== 0) return;
+    if ((e.target as HTMLElement).closest(".context-menu")) return;
+
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const THRESHOLD = 4;
+
+    const cleanup = () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", cleanup);
+    };
+    const onMove = (me: MouseEvent) => {
+      if (
+        Math.abs(me.clientX - startX) > THRESHOLD ||
+        Math.abs(me.clientY - startY) > THRESHOLD
+      ) {
+        cleanup();
+        getCurrentWindow().startDragging().catch(() => {});
+      }
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", cleanup);
+  };
+
   const openMain = async () => {
     closeMenu();
     await invoke("show_main");
@@ -88,7 +119,7 @@ export default function PetWindow() {
   return (
     <div
       className="pet-window"
-      {...(locked ? {} : { "data-tauri-drag-region": true })}
+      onMouseDown={handleMouseDown}
       onContextMenu={handleContextMenu}
       onClick={closeMenu}
     >

@@ -7,7 +7,7 @@ interface PetProps {
 
 /**
  * 펫 캐릭터 렌더러 — 노션 AI 캐릭터 이미지 + 상태 소품(스파클/zzz/연필) 오버레이.
- * 위치 고정이 꺼져 있을 때만 드래그로 이동할 수 있다.
+ * 드래그 이동은 PetWindow의 mousedown 핸들러(startDragging)가 처리한다.
  */
 export default function Pet({ onClick }: PetProps) {
   const state = usePetStore((s) => s.state);
@@ -17,7 +17,6 @@ export default function Pet({ onClick }: PetProps) {
     <div
       className={`pet ${state}${locked ? " locked" : ""}`}
       onClick={onClick}
-      {...(locked ? {} : { "data-tauri-drag-region": true })}
       role="img"
       aria-label="노션 펫"
     >
