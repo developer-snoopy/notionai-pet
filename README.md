@@ -22,16 +22,52 @@
 
 ## 📥 설치하기
 
-### 방법 1 — 설치 파일 사용 (권장)
+> **요구 사항**: Windows 10/11 (x64) + WebView2 Runtime (Windows 11은 기본 내장, Windows 10은 설치 시 자동 안내)
 
-1. [Releases](https://github.com/developer-snoopy/notionai-pet/releases) 페이지에서 최신 설치 파일을 내려받습니다.
-   - `notionai-pet_x.x.x_x64-setup.exe` (NSIS) 또는
-   - `notionai-pet_x.x.x_x64_en-US.msi` (MSI)
-2. 설치 파일을 실행하고 안내에 따라 설치합니다.
+### 방법 1 — 설치 파일 다운로드 (권장)
 
-> **요구 사항**: Windows 10/11 + WebView2 Runtime (Windows 11은 기본 내장, Windows 10은 설치 시 자동 안내)
+1. [**Releases v0.1.0**](https://github.com/developer-snoopy/notionai-pet/releases/latest) 페이지를 엽니다.
+2. **Assets**에서 둘 중 하나를 내려받아 실행합니다.
+   - [`notionai-pet_0.1.0_x64-setup.exe`](https://github.com/developer-snoopy/notionai-pet/releases/download/v0.1.0/notionai-pet_0.1.0_x64-setup.exe) — NSIS 설치 파일 (권장, 약 3.6MB)
+   - [`notionai-pet_0.1.0_x64_en-US.msi`](https://github.com/developer-snoopy/notionai-pet/releases/download/v0.1.0/notionai-pet_0.1.0_x64_en-US.msi) — MSI 설치 파일 (약 5.2MB)
+3. 설치 안내에 따라 진행하면 시작 메뉴에 **notionai-pet**이 등록됩니다.
 
-### 방법 2 — 소스에서 직접 빌드
+> 💡 서명되지 않은 앱이라 Windows SmartScreen 경고가 뜰 수 있습니다. **추가 정보 → 실행**을 누르면 설치할 수 있습니다.
+
+### 방법 2 — 명령줄(Command Line)로 설치
+
+PowerShell을 열고 아래를 실행하세요.
+
+**NSIS 설치 파일 (자동 설치)**
+
+```powershell
+# 다운로드
+Invoke-WebRequest -Uri "https://github.com/developer-snoopy/notionai-pet/releases/download/v0.1.0/notionai-pet_0.1.0_x64-setup.exe" -OutFile "$env:TEMP\notionai-pet-setup.exe"
+
+# 무인(silent) 설치
+& "$env:TEMP\notionai-pet-setup.exe" /S
+```
+
+**MSI 설치 파일 (msiexec)**
+
+```powershell
+# 다운로드
+Invoke-WebRequest -Uri "https://github.com/developer-snoopy/notionai-pet/releases/download/v0.1.0/notionai-pet_0.1.0_x64_en-US.msi" -OutFile "$env:TEMP\notionai-pet.msi"
+
+# 무인(silent) 설치
+msiexec /i "$env:TEMP\notionai-pet.msi" /qn
+```
+
+**GitHub CLI를 사용하는 경우**
+
+```powershell
+gh release download v0.1.0 --repo developer-snoopy/notionai-pet --pattern "*.msi" --dir "$env:TEMP"
+msiexec /i "$env:TEMP\notionai-pet_0.1.0_x64_en-US.msi" /qn
+```
+
+제거는 **설정 → 앱 → notionai-pet → 제거** 또는 `msiexec /x "$env:TEMP\notionai-pet.msi" /qn` 으로 할 수 있습니다.
+
+### 방법 3 — 소스에서 직접 빌드
 
 <details>
 <summary>펼쳐서 보기</summary>
