@@ -2,7 +2,7 @@
 name = "notionai-pet"
 version = "0.1.1"
 description = "NotionAI desktop pet with real-time speech bubbles"
-authors = ["you"]
+authors = ["FilbertLab"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
