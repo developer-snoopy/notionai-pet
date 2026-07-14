@@ -5,8 +5,10 @@ export type PetState = "idle" | "working" | "talking" | "sleeping";
 interface PetStore {
   state: PetState;
   message: string | null;
+  busy: boolean;
   say: (message: string, durationMs?: number) => void;
   setState: (state: PetState) => void;
+  setBusy: (busy: boolean) => void;
   wake: () => void;
 }
 
@@ -27,8 +29,13 @@ export const usePetStore = create<PetStore>((set, get) => {
   const showNext = () => {
     const next = messageQueue.shift();
     if (!next) {
-      set({ message: null, state: "idle" });
-      scheduleSleep();
+      // 작업 추적 중이면 말풍선이 사라져도 working 상태 유지
+      if (get().busy) {
+        set({ message: null, state: "working" });
+      } else {
+        set({ message: null, state: "idle" });
+        scheduleSleep();
+      }
       return;
     }
     set({ message: next.message, state: "talking" });
@@ -40,10 +47,22 @@ export const usePetStore = create<PetStore>((set, get) => {
   return {
     state: "idle",
     message: null,
+    busy: false,
     setState: (state) => {
       set({ state });
       if (state === "idle") scheduleSleep();
       else if (sleepTimer) window.clearTimeout(sleepTimer);
+    },
+    setBusy: (busy) => {
+      set({ busy });
+      const { message, state } = get();
+      if (busy) {
+        if (sleepTimer) window.clearTimeout(sleepTimer);
+        if (!message) set({ state: "working" });
+      } else if (!message && state === "working") {
+        set({ state: "idle" });
+        scheduleSleep();
+      }
     },
     wake: () => {
       if (get().state === "sleeping") set({ state: "idle" });

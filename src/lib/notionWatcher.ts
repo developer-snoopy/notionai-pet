@@ -56,32 +56,146 @@ async function searchRecent(token: string): Promise<SearchItem[]> {
   return (data.results ?? []) as SearchItem[];
 }
 
+/** 페이지 본문 블록들의 텍스트를 이어붙여 반환한다 (진행 내용 추적용). */
+async function fetchPageText(token: string, pageId: string): Promise<string> {
+  const res = await fetch(
+    `https://api.notion.com/v1/blocks/${pageId}/children?page_size=100`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Notion-Version": NOTION_VERSION,
+      },
+    },
+  );
+  if (!res.ok) throw new Error(`Notion blocks failed (HTTP ${res.status})`);
+  const data = await res.json();
+  const parts: string[] = [];
+  for (const block of data.results ?? []) {
+    const content = block[block.type];
+    const richText = content?.rich_text as
+      | Array<{ plain_text?: string }>
+      | undefined;
+    if (richText?.length) {
+      parts.push(richText.map((t) => t.plain_text ?? "").join(""));
+    }
+  }
+  return parts.join("\n");
+}
+
+/** 이전/현재 본문을 비교해 새로 추가·변경된 텍스트 꼬리 부분을 반환한다. */
+function diffAppended(prev: string, next: string): string {
+  if (next === prev) return "";
+  let i = 0;
+  const max = Math.min(prev.length, next.length);
+  while (i < max && prev[i] === next[i]) i++;
+  return next.slice(i).replace(/\s+/g, " ").trim();
+}
+
+export interface PageProgress {
+  title: string;
+  snippet: string;
+}
+
+export interface WatcherCallbacks {
+  /** 페이지/DB 생성·편집 감지 */
+  onActivity: (activity: NotionActivity) => void;
+  /** 추적 중인 페이지에 새로 작성된 내용 미리보기 */
+  onProgress?: (progress: PageProgress) => void;
+  /** 작업 진행 중 여부 (펫 working 상태 연동) */
+  onWorking?: (working: boolean) => void;
+}
+
+const TRACK_INTERVAL_MS = 8_000; // 추적 모드 폴링 주기
+const TRACK_IDLE_STOP_MS = 60_000; // 이 시간 동안 변화 없으면 추적 종료
+const SNIPPET_MAX = 60;
+
 /**
  * 노션 워크스페이스의 페이지 생성/편집 활동을 주기적으로 감지한다.
  * 첫 폴링은 기준선(baseline)만 수집하고, 이후 변경분을 활동 이벤트로 전달한다.
+ * 편집이 감지된 페이지는 추적 모드로 전환되어 짧은 주기(8초)로 본문을 diff,
+ * 새로 작성 중인 내용을 onProgress로 전달한다 (Notion AI 작성 내용 실시간 미리보기).
  * 반환된 함수를 호출하면 폴링이 중단된다.
  */
 export function startNotionWatcher(
   token: string,
-  onActivity: (activity: NotionActivity) => void,
+  callbacks: WatcherCallbacks,
   intervalMs: number = DEFAULT_INTERVAL_MS,
 ): () => void {
+  const { onActivity, onProgress, onWorking } = callbacks;
   const known = new Map<string, string>(); // page id → last_edited_time
   let baselineReady = false;
   let stopped = false;
+
+  // ── 추적 모드 상태 ──
+  let trackedPageId: string | null = null;
+  let trackedTitle = "";
+  let trackedText = "";
+  let trackedLastChange = 0;
+  let trackTimer: number | undefined;
+
+  const stopTracking = () => {
+    if (trackTimer) window.clearInterval(trackTimer);
+    trackTimer = undefined;
+    trackedPageId = null;
+    onWorking?.(false);
+  };
+
+  const trackPoll = async () => {
+    if (!trackedPageId || stopped) return;
+    try {
+      const text = await fetchPageText(token, trackedPageId);
+      if (stopped || !trackedPageId) return;
+      const appended = diffAppended(trackedText, text);
+      if (appended) {
+        trackedText = text;
+        trackedLastChange = Date.now();
+        const snippet =
+          appended.length > SNIPPET_MAX
+            ? `…${appended.slice(-SNIPPET_MAX)}`
+            : appended;
+        onProgress?.({ title: trackedTitle, snippet });
+      } else if (Date.now() - trackedLastChange > TRACK_IDLE_STOP_MS) {
+        stopTracking();
+      }
+    } catch {
+      stopTracking(); // 접근 불가 페이지 등은 추적 중단
+    }
+  };
+
+  const startTracking = async (pageId: string, title: string) => {
+    const isNewTarget = trackedPageId !== pageId;
+    trackedPageId = pageId;
+    trackedTitle = title;
+    trackedLastChange = Date.now();
+    onWorking?.(true);
+    if (isNewTarget) {
+      // 현재 본문을 기준선으로 잡고 이후 추가분만 보여준다
+      try {
+        trackedText = await fetchPageText(token, pageId);
+      } catch {
+        stopTracking();
+        return;
+      }
+    }
+    if (!trackTimer) {
+      trackTimer = window.setInterval(trackPoll, TRACK_INTERVAL_MS);
+    }
+  };
 
   const poll = async () => {
     try {
       const items = await searchRecent(token);
       if (stopped) return;
 
-      const activities: NotionActivity[] = [];
+      const activities: Array<NotionActivity & { id: string }> = [];
       for (const item of items) {
         const prev = known.get(item.id);
         if (prev === item.last_edited_time) continue;
         known.set(item.id, item.last_edited_time);
         if (!baselineReady) continue;
         activities.push({
+          id: item.id,
           kind: prev === undefined ? "created" : "edited",
           objectType: item.object,
           title: extractTitle(item),
@@ -94,6 +208,10 @@ export function startNotionWatcher(
       for (const activity of activities.slice(0, 3)) {
         onActivity(activity);
       }
+
+      // 가장 최근에 편집된 페이지를 추적 모드로 전환
+      const target = activities.find((a) => a.objectType === "page");
+      if (target) void startTracking(target.id, target.title);
     } catch {
       // 네트워크 오류/rate limit 시 다음 주기에 재시도
     }
@@ -105,6 +223,7 @@ export function startNotionWatcher(
   return () => {
     stopped = true;
     window.clearInterval(timer);
+    stopTracking();
   };
 }
 

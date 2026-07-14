@@ -426,6 +426,8 @@ body,
   margin-bottom: 14px;
   animation: pop-in 0.25s ease-out;
   box-shadow: 2px 3px 0 rgba(55, 53, 47, 0.15);
+  white-space: pre-line; /* 진행 미리보기의 제목/내용 줄바꿈 표시 */
+  word-break: break-all;
 }
 
 .speech-bubble::after {

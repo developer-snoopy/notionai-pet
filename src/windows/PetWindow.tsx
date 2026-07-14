@@ -21,6 +21,7 @@ const CLICK_MESSAGES = [
 export default function PetWindow() {
   const say = usePetStore((s) => s.say);
   const wake = usePetStore((s) => s.wake);
+  const setBusy = usePetStore((s) => s.setBusy);
 
   useEffect(() => {
     say(GREETINGS[Math.floor(Math.random() * GREETINGS.length)]);
@@ -30,8 +31,15 @@ export default function PetWindow() {
     invoke<string | null>("load_token")
       .then((token) => {
         if (!token) return;
-        stopWatcher = startNotionWatcher(token, (activity) => {
-          say(activityMessage(activity), 5000);
+        stopWatcher = startNotionWatcher(token, {
+          onActivity: (activity) => {
+            say(activityMessage(activity), 5000);
+          },
+          // 작성 중인 페이지의 새 내용을 실시간 미리보기로 표시
+          onProgress: ({ title, snippet }) => {
+            say(`✍️ "${title}"\n${snippet}`, 6000);
+          },
+          onWorking: setBusy,
         });
       })
       .catch(() => {});
@@ -39,7 +47,7 @@ export default function PetWindow() {
     return () => {
       stopWatcher?.();
     };
-  }, [say]);
+  }, [say, setBusy]);
 
   const handleClick = () => {
     wake();
