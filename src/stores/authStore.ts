@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { invoke } from "@tauri-apps/api/core";
+import { emit } from "@tauri-apps/api/event";
 import { NotionUser, verifyToken } from "../lib/notion";
 
 export type Step = "loading" | "login" | "ai-check" | "home";
@@ -62,11 +63,15 @@ export const useAuthStore = create<AuthStore>((set) => ({
     await invoke("save_token", { token });
     localStorage.setItem(USER_KEY, JSON.stringify(user));
     set({ token, user, step: "ai-check" });
+    // 펫 창이 새 토큰으로 감시를 시작하도록 알림
+    await emit("token-changed").catch(() => {});
   },
   proceedToHome: () => set({ step: "home" }),
   logout: async () => {
     await invoke("delete_token").catch(() => {});
     localStorage.removeItem(USER_KEY);
     set({ token: null, user: null, step: "login" });
+    // 펫 창이 감시를 중단하도록 알림
+    await emit("token-changed").catch(() => {});
   },
 }));

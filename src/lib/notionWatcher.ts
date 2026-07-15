@@ -10,6 +10,16 @@ export interface NotionActivity {
   time: string;
 }
 
+/** Notion API 응답 오류 (HTTP 상태 코드 포함) */
+export class NotionApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+  }
+}
+
 interface SearchItem {
   id: string;
   object: "page" | "database";
@@ -51,7 +61,11 @@ async function searchRecent(token: string): Promise<SearchItem[]> {
       sort: { direction: "descending", timestamp: "last_edited_time" },
     }),
   });
-  if (!res.ok) throw new Error(`Notion search failed (HTTP ${res.status})`);
+  if (!res.ok)
+    throw new NotionApiError(
+      `Notion search failed (HTTP ${res.status})`,
+      res.status,
+    );
   const data = await res.json();
   return (data.results ?? []) as SearchItem[];
 }
@@ -68,7 +82,11 @@ async function fetchPageText(token: string, pageId: string): Promise<string> {
       },
     },
   );
-  if (!res.ok) throw new Error(`Notion blocks failed (HTTP ${res.status})`);
+  if (!res.ok)
+    throw new NotionApiError(
+      `Notion blocks failed (HTTP ${res.status})`,
+      res.status,
+    );
   const data = await res.json();
   const parts: string[] = [];
   for (const block of data.results ?? []) {
@@ -97,6 +115,8 @@ export interface PageProgress {
   snippet: string;
 }
 
+export type WatcherError = "auth" | "network";
+
 export interface WatcherCallbacks {
   /** 페이지/DB 생성·편집 감지 */
   onActivity: (activity: NotionActivity) => void;
@@ -104,11 +124,17 @@ export interface WatcherCallbacks {
   onProgress?: (progress: PageProgress) => void;
   /** 작업 진행 중 여부 (펫 working 상태 연동) */
   onWorking?: (working: boolean) => void;
+  /** 통합에 연결된 페이지가 하나도 없을 때 1회 알림 */
+  onEmpty?: () => void;
+  /** 토큰 권한 오류(auth) 또는 연속 네트워크 오류(network) 알림 */
+  onError?: (kind: WatcherError) => void;
 }
 
 const TRACK_INTERVAL_MS = 8_000; // 추적 모드 폴링 주기
 const TRACK_IDLE_STOP_MS = 60_000; // 이 시간 동안 변화 없으면 추적 종료
 const SNIPPET_MAX = 60;
+const ERROR_NOTIFY_AFTER = 3; // 연속 실패 횟수가 이 값에 도달하면 onError 알림
+const CREATED_WINDOW_MS = 90_000; // 생성/편집 구분: 생성 후 이 시간 안의 편집은 "생성"으로 간주
 
 /**
  * 노션 워크스페이스의 페이지 생성/편집 활동을 주기적으로 감지한다.
@@ -122,10 +148,13 @@ export function startNotionWatcher(
   callbacks: WatcherCallbacks,
   intervalMs: number = DEFAULT_INTERVAL_MS,
 ): () => void {
-  const { onActivity, onProgress, onWorking } = callbacks;
+  const { onActivity, onProgress, onWorking, onEmpty, onError } = callbacks;
   const known = new Map<string, string>(); // page id → last_edited_time
   let baselineReady = false;
   let stopped = false;
+  let emptyNotified = false;
+  let consecutiveErrors = 0;
+  let errorNotified = false;
 
   // ── 추적 모드 상태 ──
   let trackedPageId: string | null = null;
@@ -187,6 +216,14 @@ export function startNotionWatcher(
     try {
       const items = await searchRecent(token);
       if (stopped) return;
+      consecutiveErrors = 0;
+      errorNotified = false;
+
+      // 통합에 연결된 페이지가 하나도 없으면 감지할 대상이 없다 — 사용자에게 안내
+      if (!baselineReady && items.length === 0 && !emptyNotified) {
+        emptyNotified = true;
+        onEmpty?.();
+      }
 
       const activities: Array<NotionActivity & { id: string }> = [];
       for (const item of items) {
@@ -194,9 +231,15 @@ export function startNotionWatcher(
         if (prev === item.last_edited_time) continue;
         known.set(item.id, item.last_edited_time);
         if (!baselineReady) continue;
+        // 처음 보는 항목이라도 생성된 지 오래됐다면 "편집"으로 판별
+        // (기준선 밖에 있던 기존 페이지가 편집되어 검색 상위로 올라온 경우)
+        const recentlyCreated =
+          new Date(item.last_edited_time).getTime() -
+            new Date(item.created_time).getTime() <
+          CREATED_WINDOW_MS;
         activities.push({
           id: item.id,
-          kind: prev === undefined ? "created" : "edited",
+          kind: prev === undefined && recentlyCreated ? "created" : "edited",
           objectType: item.object,
           title: extractTitle(item),
           time: item.last_edited_time,
@@ -212,8 +255,21 @@ export function startNotionWatcher(
       // 가장 최근에 편집된 페이지를 추적 모드로 전환
       const target = activities.find((a) => a.objectType === "page");
       if (target) void startTracking(target.id, target.title);
-    } catch {
-      // 네트워크 오류/rate limit 시 다음 주기에 재시도
+    } catch (e) {
+      // 네트워크 오류/rate limit 시 다음 주기에 재시도하되, 반복되면 사용자에게 알림
+      if (stopped) return;
+      if (e instanceof NotionApiError && (e.status === 401 || e.status === 403)) {
+        if (!errorNotified) {
+          errorNotified = true;
+          onError?.("auth");
+        }
+        return;
+      }
+      consecutiveErrors++;
+      if (consecutiveErrors >= ERROR_NOTIFY_AFTER && !errorNotified) {
+        errorNotified = true;
+        onError?.("network");
+      }
     }
   };
 
